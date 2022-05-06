@@ -3,7 +3,7 @@ module Test.Main where
 import Prelude
 import Effect (Effect)
 import Data.Maybe (Maybe(..))
-import Math  (round)
+import Data.Number  (round)
 import Partial.Unsafe (unsafePartial)
 import Data.Geometry.Plane (abs, circle
                          , halfline, length, line, meets, middle
@@ -24,7 +24,7 @@ main = unsafePartial $ do
   let i = middle "I" eb
   let [f] = (rename "F") <$> c `meets` (halfline a (vector b a))
   let g = circle f (length $ vector i e)
-  let [h1,h2] = g `meets` c
+  let [_h1, _h2] = g `meets` c
   let [h] = (rename "H") <$> (line a e) `meets` (line i f)
   -- The following line is useless but valid:
   let [] = (segment b h Nothing) `meets` (segment e f Nothing)

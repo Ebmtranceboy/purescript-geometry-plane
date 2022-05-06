@@ -5,7 +5,7 @@ import Prelude
 import Data.Array (filter)
 import Data.Maybe (Maybe)
 import Data.Sparse.Polynomial (Polynomial, (?), (^))
-import Math (cos, sin, sqrt)
+import Data.Number (cos, sin, sqrt)
 
 type PointAttributes =
   { name :: String
@@ -66,7 +66,7 @@ vector (Point a) (Point b) =
   Vector $ b.coordinates - a.coordinates
 
 scale :: Number -> Vector -> Vector
-scale k v@(Vector coordinates) =
+scale k (Vector coordinates) =
   Vector $ k^0 * coordinates
 
 instance basedVector :: Based Vector where
@@ -81,7 +81,7 @@ instance measurableVector :: Measurable Vector where
   length v = sqrt $ (abs v) * (abs v) + (ord v) * (ord v)
 
 instance measurableSegment :: Measurable Segment where
-  length (Segment { origin, extremity, asOriented }) =
+  length (Segment { origin, extremity, asOriented: _ }) =
     length $ vector origin extremity
 
 normalized :: Vector -> Vector
@@ -134,7 +134,7 @@ aPointOnLine (Line { a, b, c }) =
   point "" (-a*c/(a*a+b*b)) (-b*c/(a*a+b*b))
 
 aVectorOfLine :: Line -> Vector
-aVectorOfLine (Line { a, b, c }) =
+aVectorOfLine (Line { a, b, c: _ }) =
   Vector $ (-b)^0 + a^1
 
 newtype Circle = Circle {center :: Point, radius :: Number}
@@ -184,11 +184,12 @@ class Intersectable a b where
   meets :: a -> b -> Array Point
 
 instance interLineLine :: Intersectable Line Line where
-  meets (Line { a, b, c }) (Line { a:a', b:b', c:c' }) =
-    let delta = a*b' - a'*b
-    in case unit of
-     unit | delta == 0.0 -> []
-          | otherwise    ->
+  meets (Line { a, b, c }) (Line { a:a', b:b', c:c' }) = next
+      where
+      delta = a*b' - a'*b
+      next
+        | delta == 0.0 = []
+        | otherwise    =
               [point "" ((b*c'-b'*c)/delta) ((a'*c-a*c')/delta)]
 
 instance interLineHalfLine :: Intersectable Line HalfLine where
@@ -201,15 +202,16 @@ instance interHalfLineLine :: Intersectable HalfLine Line where
   meets hl l = meets l hl
 
 instance interLineCircle :: Intersectable Line Circle where
-  meets l@(Line { a, b, c }) (Circle { center, radius }) =
-    let m = aPointOnLine l
+  meets l (Circle { center, radius }) =
+    next
+        where
+        m = aPointOnLine l
         u = aVectorOfLine l
         n = m <+| projection u (vector m center)
         ob = length $ vector center n
-      in case unit of
-        unit | ob > radius  -> []
-             | ob == radius -> [n]
-             | otherwise    ->
+        next | ob > radius  = []
+             | ob == radius = [n]
+             | otherwise    =
                 let om = sqrt $ radius * radius - ob *ob
                     v = scale (om / length u) u
                  in [ n <+| v, n <+| (scale (-1.0) v)]
@@ -247,7 +249,7 @@ instance interHalfLineHalfLine :: Intersectable HalfLine HalfLine where
          hl `meets` l
 
 instance interSegmentLine :: Intersectable Segment Line where
-  meets (Segment { origin, extremity, asOriented }) l =
+  meets (Segment { origin, extremity, asOriented: _ }) l =
     let hl = halfline origin (vector origin extremity)
     in filter (\p ->
         cosAngle (vector extremity p)
@@ -267,7 +269,7 @@ instance interHalfLineSegment :: Intersectable HalfLine Segment where
   meets hl s = meets s hl
 
 instance interSegmentCircle :: Intersectable Segment Circle where
-  meets (Segment { origin, extremity, asOriented }) c =
+  meets (Segment { origin, extremity, asOriented: _ }) c =
     let hl = halfline origin (vector origin extremity)
     in filter (\p ->
         cosAngle (vector extremity p)
@@ -277,7 +279,7 @@ instance interCircleSegment :: Intersectable Circle Segment where
   meets c s = meets s c
 
 instance interSegmentSegment :: Intersectable Segment Segment where
-  meets (Segment { origin, extremity, asOriented }) s =
+  meets (Segment { origin, extremity, asOriented: _ }) s =
     let hl = halfline origin (vector origin extremity)
     in filter (\p ->
         cosAngle (vector extremity p)
