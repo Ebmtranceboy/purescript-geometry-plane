@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Array (filter)
 import Data.Maybe (Maybe)
-import Data.Sparse.Polynomial (Polynomial, (?), (^))
+import Data.Sparse.Polynomial (Polynomial, (!), (^))
 import Data.Number (cos, sin, sqrt)
 
 type PointAttributes =
@@ -32,8 +32,8 @@ class Based a where
   coords :: a -> Polynomial Number
 
 instance basedPoint :: Based Point where
-  abs (Point p) = p.coordinates ? 0
-  ord (Point p) = p.coordinates ? 1
+  abs (Point p) = p.coordinates ! 0
+  ord (Point p) = p.coordinates ! 1
   coords (Point p) = p.coordinates
 
 rename :: String -> Point -> Point
@@ -70,8 +70,8 @@ scale k (Vector coordinates) =
   Vector $ k^0 * coordinates
 
 instance basedVector :: Based Vector where
-  abs (Vector v) = v ? 0
-  ord (Vector v) = v ? 1
+  abs (Vector v) = v ! 0
+  ord (Vector v) = v ! 1
   coords (Vector v) = v
 
 class Measurable a where

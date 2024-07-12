@@ -9,8 +9,7 @@ import Data.Geometry.Plane (abs, circle
                          , halfline, length, line, meets, middle
                          , normalTo, ord, point, rename
                          , segment, vector)
-
-foreign import assert :: String -> Boolean -> Effect Unit
+import Test.Assert (assert')
 
 main :: Effect Unit
 main = unsafePartial $ do
@@ -30,5 +29,5 @@ main = unsafePartial $ do
   let [] = (segment b h Nothing) `meets` (segment e f Nothing)
   let [j] = (rename "J") <$> (halfline b (vector b h)) `meets` 
                               (segment e f Nothing)
-  assert "computations OK" $ abs j == 470.0 && round(ord j) == 270.0
+  assert' "computations OK" $ abs j == 470.0 && round(ord j) == 270.0
   pure unit
